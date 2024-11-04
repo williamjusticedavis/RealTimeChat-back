@@ -15,7 +15,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173", // Vite frontend URL
+    origin: "https://realtimechat-front.netlify.app/", // Vite frontend URL
     methods: ["GET", "POST"],
   },
 });
@@ -25,8 +25,7 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(express.json());
 const allowedOrigins = [
-  "http://localhost:5173", // Vite frontend URL for local testing
-  "https://your-netlify-app.netlify.app" // Replace with your actual Netlify URL
+  "https://realtimechat-front.netlify.app/" // Replace with your actual Netlify URL
 ];
 
 app.use(cors({
