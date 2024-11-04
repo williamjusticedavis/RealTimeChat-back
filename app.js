@@ -1,4 +1,3 @@
-// app.js
 const express = require("express");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
@@ -6,21 +5,20 @@ const cors = require("cors");
 const http = require("http");
 const { Server } = require("socket.io");
 const authRoutes = require("./routes/auth");
-const chatRoutes = require("./routes/chat"); // Import chat routes
-
-
+const chatRoutes = require("./routes/chat");
 
 dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
-// Socket.IO setup with CORS
+// Socket.IO setup with CORS for Netlify front end
 const io = new Server(server, {
   cors: {
-    origin: "https://realtimechat-front.netlify.app", // No trailing slash
+    origin: "https://realtimechat-front.netlify.app",
     methods: ["GET", "POST"],
   },
 });
+app.set("io", io);
 
 const PORT = process.env.PORT || 3000;
 
@@ -44,7 +42,7 @@ app.use(cors({
 
 // Use routes
 app.use("/auth", authRoutes);
-app.use("/chat", chatRoutes); // Add chat routes here
+app.use("/chat", chatRoutes);
 
 // MongoDB connection
 mongoose.connect(process.env.MONGO_URI, {
@@ -58,13 +56,9 @@ mongoose.connect(process.env.MONGO_URI, {
 io.on("connection", (socket) => {
   console.log("A user connected:", socket.id);
 
-  socket.on("joinRoom", (roomId) => {
-    socket.join(roomId);
-    console.log(`User ${socket.id} joined room ${roomId}`);
-  });
-
-  socket.on("message", ({ roomId, message }) => {
-    io.to(roomId).emit("message", message); // Broadcast to the room only
+  socket.on("joinRoom", (userId) => {
+    socket.join(userId);
+    console.log(`User ${socket.id} joined room ${userId}`);
   });
 
   socket.on("disconnect", () => {
@@ -72,7 +66,6 @@ io.on("connection", (socket) => {
   });
 });
 
-// Start server
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
