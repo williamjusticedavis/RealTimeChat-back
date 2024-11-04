@@ -13,9 +13,11 @@ const chatRoutes = require("./routes/chat"); // Import chat routes
 dotenv.config();
 const app = express();
 const server = http.createServer(app);
+
+// Socket.IO setup with CORS
 const io = new Server(server, {
   cors: {
-    origin: "https://realtimechat-front.netlify.app/", // Vite frontend URL
+    origin: "https://realtimechat-front.netlify.app", // No trailing slash
     methods: ["GET", "POST"],
   },
 });
@@ -24,8 +26,10 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.json());
+
+// CORS setup for Express routes
 const allowedOrigins = [
-  "https://realtimechat-front.netlify.app/" // Replace with your actual Netlify URL
+  "https://realtimechat-front.netlify.app"
 ];
 
 app.use(cors({
