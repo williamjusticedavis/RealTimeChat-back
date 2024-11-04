@@ -8,6 +8,8 @@ const { Server } = require("socket.io");
 const authRoutes = require("./routes/auth");
 const chatRoutes = require("./routes/chat"); // Import chat routes
 
+
+
 dotenv.config();
 const app = express();
 const server = http.createServer(app);
@@ -22,7 +24,7 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.json());
-app.use(cors());
+app.use(cors({ origin: "https://your-netlify-app.netlify.app" })); // Replace with your Netlify URL
 
 // Use routes
 app.use("/auth", authRoutes);
