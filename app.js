@@ -24,7 +24,20 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.json());
-app.use(cors({ origin: "https://your-netlify-app.netlify.app" })); // Replace with your Netlify URL
+const allowedOrigins = [
+  "http://localhost:5173", // Vite frontend URL for local testing
+  "https://your-netlify-app.netlify.app" // Replace with your actual Netlify URL
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  }
+}));
 
 // Use routes
 app.use("/auth", authRoutes);
