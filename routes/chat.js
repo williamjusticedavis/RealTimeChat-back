@@ -13,12 +13,10 @@ router.post("/send", async (req, res) => {
     const message = new Message({ sender: senderId, receiver: receiverId, content });
     await message.save();
 
-    // Emit the message to the receiver's room only
+    // Emit the message to the room of the receiver only
     io.to(receiverId).emit("newMessage", message);
 
-    // Also emit to the sender so their own chat view updates immediately
-    io.to(senderId).emit("newMessage", message);
-
+    // Send the response to the sender’s chat view
     res.status(201).json(message);
   } catch (error) {
     res.status(500).json({ error: "Failed to send message" });
