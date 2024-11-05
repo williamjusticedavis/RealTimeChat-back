@@ -5,6 +5,7 @@ const router = express.Router();
 
 // Send a message
 // routes/chat.js
+// routes/chat.js
 router.post("/send", async (req, res) => {
   const { senderId, receiverId, content } = req.body;
   const io = req.app.get("io"); // Access Socket.IO instance
@@ -13,15 +14,18 @@ router.post("/send", async (req, res) => {
     const message = new Message({ sender: senderId, receiver: receiverId, content });
     await message.save();
 
-    // Emit the message to the room of the receiver only
-    io.to(receiverId).emit("newMessage", message);
+    if (senderId === receiverId) {
+      io.to(senderId).emit("newMessage", message);
+    } else {
+      io.to(receiverId).emit("newMessage", message);
+    }
 
-    // Send the response to the sender’s chat view
     res.status(201).json(message);
   } catch (error) {
     res.status(500).json({ error: "Failed to send message" });
   }
 });
+
 router.get("/messages/:userId/:contactId", async (req, res) => {
     const { userId, contactId } = req.params;
   
