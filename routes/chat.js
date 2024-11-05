@@ -4,6 +4,7 @@ const Message = require("../models/Message");
 const router = express.Router();
 
 // Send a message
+// routes/chat.js
 router.post("/send", async (req, res) => {
   const { senderId, receiverId, content } = req.body;
   const io = req.app.get("io"); // Access Socket.IO instance
@@ -23,8 +24,6 @@ router.post("/send", async (req, res) => {
     res.status(500).json({ error: "Failed to send message" });
   }
 });
-
-
 router.get("/messages/:userId/:contactId", async (req, res) => {
     const { userId, contactId } = req.params;
   
