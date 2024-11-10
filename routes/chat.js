@@ -9,6 +9,7 @@ router.post("/send", async (req, res) => {
   const io = req.app.get("io");
 
   try {
+    console.log('Sending message');
     const message = new Message({ sender: senderId, receiver: receiverId, content });
     await message.save();
 
