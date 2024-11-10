@@ -4,19 +4,19 @@ const Message = require("../models/Message");
 const router = express.Router();
 
 // Send a message
-// routes/chat.js
-// routes/chat.js
 router.post("/send", async (req, res) => {
   const { senderId, receiverId, content } = req.body;
-  const io = req.app.get("io"); // Access Socket.IO instance
+  const io = req.app.get("io");
 
   try {
     const message = new Message({ sender: senderId, receiver: receiverId, content });
     await message.save();
 
     if (senderId === receiverId) {
+      console.log(`Emitting self-message to user ${senderId}`);
       io.to(senderId).emit("newMessage", message);
     } else {
+      console.log(`Emitting message from ${senderId} to ${receiverId}`);
       io.to(receiverId).emit("newMessage", message);
     }
 
@@ -25,6 +25,7 @@ router.post("/send", async (req, res) => {
     res.status(500).json({ error: "Failed to send message" });
   }
 });
+
 
 router.get("/messages/:userId/:contactId", async (req, res) => {
     const { userId, contactId } = req.params;
