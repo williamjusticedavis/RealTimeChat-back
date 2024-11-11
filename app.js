@@ -16,6 +16,7 @@ const io = new Server(server, {
   cors: {
     origin: "https://realtimechat-front.netlify.app",
     methods: ["GET", "POST"],
+    credentials: true
   },
 });
 app.set("io", io);
