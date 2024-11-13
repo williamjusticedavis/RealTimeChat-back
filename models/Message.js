@@ -5,6 +5,12 @@ const messageSchema = new mongoose.Schema({
   receiver: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   content: { type: String, required: true },
   timestamp: { type: Date, default: Date.now },
+  emojisReacted: [
+    {
+      emoji: { type: String, required: true },
+      reactedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    },
+  ],
 });
 
 const Message = mongoose.model("Message", messageSchema);

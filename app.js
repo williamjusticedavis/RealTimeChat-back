@@ -58,15 +58,50 @@ mongoose.connect(process.env.MONGO_URI, {
 io.on("connection", (socket) => {
   console.log("A user connected:", socket.id);
 
+  // Join Room
   socket.on("joinRoom", (userId) => {
     socket.join(userId);
     console.log(`User ${socket.id} joined room ${userId}`);
   });
 
+  // Add or remove reaction
+  socket.on("addReaction", async ({ messageId, emoji, userId }) => {
+    try {
+      const message = await Message.findById(messageId);
+      if (!message) return;
+
+      // Check if the reaction already exists
+      const existingReaction = message.emojisReacted.find(
+        (reaction) => reaction.emoji === emoji && reaction.reactedBy.toString() === userId
+      );
+
+      if (existingReaction) {
+        // Remove the existing reaction
+        message.emojisReacted = message.emojisReacted.filter(
+          (reaction) => !(reaction.emoji === emoji && reaction.reactedBy.toString() === userId)
+        );
+      } else {
+        // Add a new reaction
+        message.emojisReacted.push({ emoji, reactedBy: userId });
+      }
+
+      await message.save();
+
+      // Emit updated reactions to both the sender and receiver
+      io.to(message.sender.toString()).emit("updateReactions", { messageId, emojisReacted: message.emojisReacted });
+      io.to(message.receiver.toString()).emit("updateReactions", { messageId, emojisReacted: message.emojisReacted });
+
+    } catch (error) {
+      console.error("Failed to update reaction:", error);
+    }
+  });
+
+  // Disconnect
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
   });
 });
+
 
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
