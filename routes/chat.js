@@ -79,3 +79,22 @@ router.post("/react", async (req, res) => {
     res.status(500).json({ error: "Failed to update reaction" });
   }
 });
+
+router.post("/removeReaction", async (req, res) => {
+  const { messageId, emoji, userId } = req.body;
+
+  try {
+    const message = await Message.findById(messageId);
+    if (!message) return res.status(404).json({ error: "Message not found" });
+
+    // Filter out the specific reaction to remove
+    message.emojisReacted = message.emojisReacted.filter(
+      (reaction) => !(reaction.emoji === emoji && reaction.reactedBy.toString() === userId)
+    );
+
+    await message.save();
+    res.status(200).json({ message: "Reaction removed successfully" });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to remove reaction" });
+  }
+});
