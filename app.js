@@ -93,21 +93,22 @@ io.on("connection", (socket) => {
     }
   });
 
-  // Remove reaction
   socket.on("removeReaction", async ({ messageId, emoji, userId }) => {
     try {
       const message = await Message.findById(messageId);
       if (!message) return;
-
+  
+      // Remove the specific reaction
       message.emojisReacted = message.emojisReacted.filter(
         (reaction) => !(reaction.emoji === emoji && reaction.reactedBy.toString() === userId)
       );
-
+  
       await message.save();
-
+  
+      // Emit updated reactions to both sender and receiver
       io.to(message.sender.toString()).emit("updateReactions", { messageId, emojisReacted: message.emojisReacted });
       io.to(message.receiver.toString()).emit("updateReactions", { messageId, emojisReacted: message.emojisReacted });
-
+  
     } catch (error) {
       console.error("Failed to remove reaction:", error);
     }
