@@ -55,6 +55,7 @@ mongoose.connect(process.env.MONGO_URI, {
 .catch((error) => console.log("MongoDB connection error:", error));
 
 // Socket.IO connection
+// Socket.IO connection
 io.on("connection", (socket) => {
   console.log("A user connected:", socket.id);
 
@@ -64,30 +65,26 @@ io.on("connection", (socket) => {
     console.log(`User ${socket.id} joined room ${userId}`);
   });
 
-  // Add or remove reaction
+  // Add reaction
   socket.on("addReaction", async ({ messageId, emoji, userId }) => {
     try {
       const message = await Message.findById(messageId);
       if (!message) return;
 
-      // Check if the reaction already exists
       const existingReaction = message.emojisReacted.find(
         (reaction) => reaction.emoji === emoji && reaction.reactedBy.toString() === userId
       );
 
       if (existingReaction) {
-        // Remove the existing reaction
         message.emojisReacted = message.emojisReacted.filter(
           (reaction) => !(reaction.emoji === emoji && reaction.reactedBy.toString() === userId)
         );
       } else {
-        // Add a new reaction
         message.emojisReacted.push({ emoji, reactedBy: userId });
       }
 
       await message.save();
 
-      // Emit updated reactions to both the sender and receiver
       io.to(message.sender.toString()).emit("updateReactions", { messageId, emojisReacted: message.emojisReacted });
       io.to(message.receiver.toString()).emit("updateReactions", { messageId, emojisReacted: message.emojisReacted });
 
@@ -96,7 +93,26 @@ io.on("connection", (socket) => {
     }
   });
 
-  // Disconnect
+  // Remove reaction
+  socket.on("removeReaction", async ({ messageId, emoji, userId }) => {
+    try {
+      const message = await Message.findById(messageId);
+      if (!message) return;
+
+      message.emojisReacted = message.emojisReacted.filter(
+        (reaction) => !(reaction.emoji === emoji && reaction.reactedBy.toString() === userId)
+      );
+
+      await message.save();
+
+      io.to(message.sender.toString()).emit("updateReactions", { messageId, emojisReacted: message.emojisReacted });
+      io.to(message.receiver.toString()).emit("updateReactions", { messageId, emojisReacted: message.emojisReacted });
+
+    } catch (error) {
+      console.error("Failed to remove reaction:", error);
+    }
+  });
+
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
   });
